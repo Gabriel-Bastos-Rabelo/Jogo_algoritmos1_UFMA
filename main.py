@@ -3,9 +3,10 @@ import random
 from pygame.locals import *
 from sys import exit
 import time
-from pydub import AudioSegment
+
 
 pygame.init()
+#aqui definimos a largura e a altura que vai ter a tela do jogo
 largura = 975
 altura = 720
 
@@ -14,9 +15,17 @@ pygame.display.set_caption("Mata Mosquito")
 
 posicaoX = random.randint(0, 880)
 posicaoY = random.randint(0, 600)
-
+# Esse será o som que irá ser disparado a cada clique do mouse no sprite
 songbotton = pygame.mixer.Sound("smw_shell_ricochet.wav")
+#Essas são as definições da fonte que iremos usar para escrever os textos na tela
 fonte = pygame.font.SysFont("arial", 40, True, False)
+
+# Função para retornar uma tupla com dois valores randômicos, um para X e outro para Y
+def posicaoRandomica():
+    posicaoX = random.randint(0, 880)
+    posicaoY = random.randint(0, 600)
+    return (posicaoX,posicaoY)
+
 
 class mosca(pygame.sprite.Sprite):
     def __init__(self):
@@ -28,7 +37,7 @@ class mosca(pygame.sprite.Sprite):
         self.image = self.sprites[self.atual]
         self.image = pygame.transform.scale(self.image, (610//7, 511//7))
         self.rect = self.image.get_rect()
-        self.rect.topleft = posicaoX, posicaoY
+        self.rect.topleft = nova_posicao
 
     def update(self):
         self.atual += 1
@@ -37,16 +46,17 @@ class mosca(pygame.sprite.Sprite):
         self.image = self.sprites[self.atual]
         self.image = pygame.transform.scale(self.image, (610//7, 511//7))
         self.rect = self.image.get_rect()
-        self.rect.topleft = posicaoX, posicaoY
-        # time.sleep(0.1)
+        self.rect.topleft = nova_posicao
+        
 
-
+nova_posicao =posicaoRandomica()
 sprites = pygame.sprite.Group()
 mosca = mosca()
 sprites.add(mosca)
+# Plano de fundo da tela e seu tamanho
 background_image = pygame.image.load("park_background.webp").convert()
 background_image = pygame.transform.scale(background_image, (largura, altura))
-# definições do jogo
+# definições iniciais do jogo
 pontos = 0
 ultimo_tempo = 0
 vidas = 5
@@ -66,8 +76,7 @@ while True:
     # verifica se o intervalo entre o ultimo clique feito pelo jogador e o tempo corrido do momento é maior que 1.2 segundos,
     # caso seja, o sprite irá mudar randomicamente sua posição para outro local
     if tempo_inicial-ultimo_tempo >= 1.2:
-        posicaoX = random.randint(0, 880)
-        posicaoY = random.randint(0, 660)
+        nova_posicao = posicaoRandomica()
         sprites.update()
         ultimo_tempo = tempo_inicial
         vidas -= 1
@@ -89,16 +98,13 @@ while True:
                 songbotton.play()
                 pontos += 1
                 print(pontos)
-                posicaoX = random.randint(0, 880)
-                posicaoY = random.randint(0, 600)
+                nova_posicao = posicaoRandomica()
                 sprites.update()
                 ultimo_tempo = pygame.time.get_ticks()/1000
-                continue
-
+                
+    #posicionamento do plano de fundo
     tela.blit(background_image, (0, 0))
     sprites.draw(tela)
-    #posicaoX = random.randint(0,880)
-    #posicaoY = random.randint(0,600)
     tela.blit(texto_pontos_formatado, (737, 36))
     tela.blit(texto_vidas_formatado, (52, 44))
     sprites.update()

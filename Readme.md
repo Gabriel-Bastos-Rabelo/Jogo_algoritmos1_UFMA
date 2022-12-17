@@ -1,1 +1,1 @@
-Jogo desenvolvido para a disciplina de algoritmos 1
+Jogo sendo desenvolvido para a disciplina de algoritmos 1
