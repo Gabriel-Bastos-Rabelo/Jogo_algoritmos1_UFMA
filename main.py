@@ -61,10 +61,20 @@ pontos = 0
 ultimo_tempo = 0
 vidas = 5
 while True:
+    #  Usando a forma de armazenar dados em arquivo, implementamos o highscore do jogo,
+    #  onde para cada iteração é verificado se a pontuação do jogador é maior que o highscore
+    with open("highscore.txt","r") as highscore:
+        for pontuação in highscore.readlines():
+            highscore = pontuação
+            if pontos>int(pontuação):
+                with open("highscore.txt","w") as maior_pontuação:
+                    maior_pontuação.write(str(pontos))
     # textos que irão aparecer na tela
+    mensagem_highscore = f"Highscore: {highscore}"
     mensagem_pontos = f"Pontos: {pontos}"
     mensagem_vidas = f"Vidas: {vidas}"
     texto_pontos_formatado = fonte.render(mensagem_pontos, False, (0,0,0))
+    texto_highscore_formatado = fonte.render(mensagem_highscore, False, (0,0,0))
     texto_vidas_formatado = fonte.render(mensagem_vidas, False, (0,0,0))
     # pega o tempo em milisecundos a cada iteração e transforma para segundos
     tempo_inicial = pygame.time.get_ticks()/1000
@@ -74,7 +84,7 @@ while True:
         print("Você perdeu")
         exit()
     # verifica se o intervalo entre o ultimo clique feito pelo jogador e o tempo corrido do momento é maior que 1.2 segundos,
-    # caso seja, o sprite irá mudar randomicamente sua posição para outro local
+    # caso seja, o sprite irá mudar randomicamente sua posição para outro local e o jogador perderá uma vida
     if tempo_inicial-ultimo_tempo >= 1.2:
         nova_posicao = posicaoRandomica()
         sprites.update()
@@ -106,6 +116,7 @@ while True:
     tela.blit(background_image, (0, 0))
     sprites.draw(tela)
     tela.blit(texto_pontos_formatado, (737, 36))
-    tela.blit(texto_vidas_formatado, (52, 44))
+    tela.blit(texto_highscore_formatado, (329, 36))
+    tela.blit(texto_vidas_formatado, (52, 36))
     sprites.update()
     pygame.display.flip()
