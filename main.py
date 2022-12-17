@@ -3,6 +3,7 @@ import random
 from pygame.locals import *
 from sys import exit
 import time
+from pydub import AudioSegment
 
 pygame.init()
 largura = 975
@@ -14,6 +15,8 @@ pygame.display.set_caption("Mata Mosquito")
 posicaoX = random.randint(0, 880)
 posicaoY = random.randint(0, 600)
 
+songbotton = pygame.mixer.Sound("smw_shell_ricochet.wav")
+fonte = pygame.font.SysFont("arial", 40, True, False)
 
 class mosca(pygame.sprite.Sprite):
     def __init__(self):
@@ -48,6 +51,11 @@ pontos = 0
 ultimo_tempo = 0
 vidas = 5
 while True:
+    # textos que irão aparecer na tela
+    mensagem_pontos = f"Pontos: {pontos}"
+    mensagem_vidas = f"Vidas: {vidas}"
+    texto_pontos_formatado = fonte.render(mensagem_pontos, False, (0,0,0))
+    texto_vidas_formatado = fonte.render(mensagem_vidas, False, (0,0,0))
     # pega o tempo em milisecundos a cada iteração e transforma para segundos
     tempo_inicial = pygame.time.get_ticks()/1000
 
@@ -78,6 +86,7 @@ while True:
             # caso a posição de clique do mouse colida com o retângulo gerado pelo sprite, os comandos abaixo serão executados
             # O sprite mudará sua posição randomicamente e o ultimo tempo vai ser atualizado
             if mosca.rect.collidepoint(mouse):
+                songbotton.play()
                 pontos += 1
                 print(pontos)
                 posicaoX = random.randint(0, 880)
@@ -90,5 +99,7 @@ while True:
     sprites.draw(tela)
     #posicaoX = random.randint(0,880)
     #posicaoY = random.randint(0,600)
+    tela.blit(texto_pontos_formatado, (737, 36))
+    tela.blit(texto_vidas_formatado, (52, 44))
     sprites.update()
     pygame.display.flip()
