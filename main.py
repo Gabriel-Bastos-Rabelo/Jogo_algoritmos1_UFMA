@@ -49,7 +49,7 @@ class Game(pygame.sprite.Sprite):
         self.tela = pygame.display.set_mode((largura, altura))
         self.relogio = pygame.time.Clock()
         self.esta_rodando = True
-        self.carregar_arquivos()
+        
     # Definimos um método para trocar as imagens da mosca a cada iteração no loop principal para dar o 
     # efeito que ela está voando
     def update(self):
@@ -61,12 +61,6 @@ class Game(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.topleft = nova_posicao
    
-    # Método para carregar imagens que serão usadas
-    def carregar_arquivos(self):
-        diretorio_imagens = os.path.join(os.getcwd(), "imagens")
-        self.background_start = os.path.join(diretorio_imagens, "background.webp")
-        self.background_start = pygame.image.load(self.background_start).convert()
-        print(diretorio_imagens)
     
     # Método criado para exibir textos na tela inicial e na tela final
     def mostrar_texto(self, texto, tamanho, cor, x, y):
@@ -86,14 +80,17 @@ class Game(pygame.sprite.Sprite):
     # Método para implementar uma tela de game over
     def mostrar_tela_derrota(self):
         self.tela.fill((0,0,0))
-        self.mostrar_texto("Voce perdeu", 32, (244,233,51), largura/2, 320)
-        self.mostrar_texto("aperte espaço para reiniciar o jogo", 19, (255,255,255), largura/2, 683)
+        self.mostrar_texto("Você perdeu", 32, (244,233,51), largura/2, 320)
+        self.mostrar_texto("Aperte espaço para reiniciar o jogo", 19, (255,255,255), largura/2, 654)
+        self.mostrar_texto("Aperte backspace para sair do jogo", 19, (255,255,255), largura/2, 683)
         pygame.display.flip()
-        self.esperar_por_jogador_start()
+        reinicio = self.esperar_por_jogador_start()
+        return reinicio
     
     # Método para esperar pela ação do jogador na tela de start
     def esperar_por_jogador_start(self):
         esperando = True
+        recomeço = False
         while esperando:
             self.relogio.tick(30)
             for event in pygame.event.get():
@@ -104,10 +101,12 @@ class Game(pygame.sprite.Sprite):
                 if event.type == pygame.KEYUP:
                     if event.key == K_SPACE:
                         esperando = False
-
-
-
-        
+                        recomeço = True
+                        return recomeço
+                    elif event.key == K_BACKSPACE:
+                        return recomeço
+            
+                        
 
 
 nova_posicao = posicaoRandomica()
@@ -122,6 +121,7 @@ background_image = pygame.transform.scale(background_image, (largura, altura))
 pontos = 0
 ultimo_tempo = 0
 vidas = 5
+primeiro_loop = True
 while True:
     #  Usando a forma de armazenar dados em arquivo, implementamos o highscore do jogo,
     #  onde para cada iteração é verificado se a pontuação do jogador é maior que o highscore
@@ -137,27 +137,35 @@ while True:
     mensagem_pontos = f"Pontos: {pontos}"
     mensagem_vidas = f"Vidas: {vidas}"
     texto_pontos_formatado = fonte.render(mensagem_pontos, False, (0, 0, 0))
-    texto_highscore_formatado = fonte.render(
-        mensagem_highscore, False, (0, 0, 0))
+    texto_highscore_formatado = fonte.render(mensagem_highscore, False, (0, 0, 0))
     texto_vidas_formatado = fonte.render(mensagem_vidas, False, (0, 0, 0))
    
-    # pega o tempo em milisecundos a cada iteração e transforma para segundos
-    tempo_inicial = pygame.time.get_ticks()/1000
-
-    # verifica se as vidas do jogador acabaram, caso tenha acabado, o jogo termina
+    # Verifica se é a primeira iteração no loop, para assim o último tempo não ser considerado 0
+    if vidas==5 and primeiro_loop==True:
+        ultimo_tempo = pygame.time.get_ticks()/1000
+        primeiro_loop = False
+    
+    # Captura a cada iteração o tempo corrido do jogo
+    tempo_corrente = pygame.time.get_ticks()/1000
+    
+    
+    # verifica se as vidas do jogador acabaram, caso tenha acabado, o jogo será finalizado ou reinicializado pelo jogador
     if vidas == 0:
-        print("Você perdeu")
-        Game.mostrar_tela_derrota()
-        exit()
+        resultado = Game.mostrar_tela_derrota()
+        if resultado:
+            vidas = 5
+            pontos = 0
+            primeiro_loop = True
+        else:
+            exit()
    
     # verifica se o intervalo entre o ultimo clique feito pelo jogador e o tempo corrido do momento é maior que 1.2 segundos,
     # caso seja, o sprite irá mudar randomicamente sua posição para outro local e o jogador perderá uma vida
-    if tempo_inicial-ultimo_tempo >= 1.2:
+    if tempo_corrente-ultimo_tempo >= 1.2:
         nova_posicao = posicaoRandomica()
         sprites.update()
-        ultimo_tempo = tempo_inicial
+        ultimo_tempo = tempo_corrente
         vidas -= 1
-        print(vidas)
     
     # verifica todos os eventos do teclado capturados
     for event in pygame.event.get():
@@ -169,13 +177,11 @@ while True:
         elif event.type == pygame.MOUSEBUTTONUP:
             # primeiramente devemos pegar a posição de clique do mouse
             mouse = pygame.mouse.get_pos()
-            print(mouse)
             # caso a posição de clique do mouse colida com o retângulo gerado pelo sprite, os comandos abaixo serão executados
             # O sprite mudará sua posição randomicamente e o ultimo tempo vai ser atualizado
             if Game.rect.collidepoint(mouse):
                 songbotton.play()
                 pontos += 1
-                print(pontos)
                 nova_posicao = posicaoRandomica()
                 sprites.update()
                 ultimo_tempo = pygame.time.get_ticks()/1000
