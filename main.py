@@ -3,15 +3,12 @@ import random
 from pygame.locals import *
 from sys import exit
 import time
-import os
-
 
 pygame.init()
 # Definição da música do jogo e seu volume
 pygame.mixer.music.set_volume(0.17)
 musica_de_fundo = pygame.mixer.music.load("musica_fundo.ogg")
 pygame.mixer.music.play(-1)
-#musica_da_derrtota = pygame.mixer.music.load('/home/GabrielBastos/Área de trabalho/Jogo_versao2_ Algoritmos1_ufma/jogo-/smw_game_over.wav')
 
 
 # aqui definimos a largura e a altura que vai ter a tela do jogo
@@ -76,7 +73,18 @@ class Game(pygame.sprite.Sprite):
         self.mostrar_texto("Desenvolvido por Gabriel Bastos e João Felipe", 19, (255,255,255), largura/2, 683)
         pygame.display.flip()
         self.esperar_por_jogador_start()
-   
+    
+    # Método para implementar a escolha de nível
+    def mostrar_tela_nivel(self):
+        self.tela.fill((0,0,0))
+        self.mostrar_texto("Escolha um nível para jogar", 32, (244,233,51), largura/2, 50)
+        self.mostrar_texto("Pressione 1 para nível fácil", 25, (255,255,255), largura/2, 100)
+        self.mostrar_texto("Pressione 2 para nível médio", 25, (255,255,255), largura/2, 140)
+        self.mostrar_texto("Pressione 3 para nível difícil", 25, (255,255,255), largura/2, 180)
+        pygame.display.flip()
+        nivel = self.esperar_por_jogador_nivel()
+        return nivel
+
     # Método para implementar uma tela de game over
     def mostrar_tela_derrota(self):
         self.tela.fill((0,0,0))
@@ -105,15 +113,32 @@ class Game(pygame.sprite.Sprite):
                         return recomeço
                     elif event.key == K_BACKSPACE:
                         return recomeço
-            
-                        
+   
+    # Método para esperar a entrada do jogador com o nível que ele deseja
+    def esperar_por_jogador_nivel(self):
+        while True:
+            self.relogio.tick(30)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    exit()
+                if event.type == pygame.KEYUP:
+                    if event.key == K_1:
+                        return 1.3
+                    elif event.key == K_2:
+                        return 1.1
+                    elif event.key == K_3:
+                        return 0.8
 
+
+                        
 
 nova_posicao = posicaoRandomica()
 sprites = pygame.sprite.Group()
 Game = Game()
 Game.mostrar_tela_start()
 sprites.add(Game)
+Game.mostrar_tela_nivel()
+nivel = Game.mostrar_tela_nivel()
 # Plano de fundo da tela e seu tamanho
 background_image = pygame.image.load("background.webp").convert()
 background_image = pygame.transform.scale(background_image, (largura, altura))
@@ -122,14 +147,19 @@ pontos = 0
 ultimo_tempo = 0
 vidas = 5
 primeiro_loop = True
+
+# Concatenação de strings para gerar nome do arquivo necessário para leitura do highscore
+lista = ["highscore", str(nivel), ".txt"]
+arquivo_nivel = "".join(lista)
+
 while True:
     #  Usando a forma de armazenar dados em arquivo, implementamos o highscore do jogo,
     #  onde para cada iteração é verificado se a pontuação do jogador é maior que o highscore
-    with open("highscore.txt", "r") as highscore:
+    with open(arquivo_nivel, "r") as highscore:
         for pontuação in highscore.readlines():
             highscore = pontuação
             if pontos > int(pontuação):
-                with open("highscore.txt", "w") as maior_pontuação:
+                with open(arquivo_nivel, "w") as maior_pontuação:
                     maior_pontuação.write(str(pontos))
    
     # textos que irão aparecer na tela
@@ -161,7 +191,7 @@ while True:
    
     # verifica se o intervalo entre o ultimo clique feito pelo jogador e o tempo corrido do momento é maior que 1.2 segundos,
     # caso seja, o sprite irá mudar randomicamente sua posição para outro local e o jogador perderá uma vida
-    if tempo_corrente-ultimo_tempo >= 1.2:
+    if tempo_corrente-ultimo_tempo >= nivel:
         nova_posicao = posicaoRandomica()
         sprites.update()
         ultimo_tempo = tempo_corrente
@@ -186,7 +216,7 @@ while True:
                 sprites.update()
                 ultimo_tempo = pygame.time.get_ticks()/1000
 
-    # posicionamento do plano de fundo
+    # posicionamento do plano de fundo, posicionamento dos textos e atualização
     tela.blit(background_image, (0, 0))
     sprites.draw(tela)
     tela.blit(texto_pontos_formatado, (737, 36))
