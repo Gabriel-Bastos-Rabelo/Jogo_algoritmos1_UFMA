@@ -92,11 +92,39 @@ class Game(pygame.sprite.Sprite):
         self.mostrar_texto("Aperte espaço para reiniciar o jogo", 19, (255,255,255), largura/2, 654)
         self.mostrar_texto("Aperte backspace para sair do jogo", 19, (255,255,255), largura/2, 683)
         pygame.display.flip()
-        reinicio = self.esperar_por_jogador_start()
+        reinicio = self.esperar_por_jogador_derrota()
         return reinicio
     
-    # Método para esperar pela ação do jogador na tela de start
+     # Método para esperar pela ação do jogador na tela de start
     def esperar_por_jogador_start(self):
+        while True:
+            self.relogio.tick(30)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    exit()
+                if event.type == pygame.KEYUP:
+                    if event.key == K_SPACE:
+                        return
+   
+   
+    # Método para esperar a entrada do jogador com o nível que ele deseja
+    def esperar_por_jogador_nivel(self):
+        while True:
+            self.relogio.tick(30)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    exit()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == K_1:
+                        return 1.3
+                    elif event.key == K_2:
+                        return 1.1
+                    elif event.key == K_3:
+                        return 0.8              
+    
+    
+    # Método para esperar pela ação do jogador na tela de derrota
+    def esperar_por_jogador_derrota(self):
         esperando = True
         recomeço = False
         while esperando:
@@ -114,30 +142,13 @@ class Game(pygame.sprite.Sprite):
                     elif event.key == K_BACKSPACE:
                         return recomeço
    
-    # Método para esperar a entrada do jogador com o nível que ele deseja
-    def esperar_por_jogador_nivel(self):
-        while True:
-            self.relogio.tick(30)
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    exit()
-                if event.type == pygame.KEYUP:
-                    if event.key == K_1:
-                        return 1.3
-                    elif event.key == K_2:
-                        return 1.1
-                    elif event.key == K_3:
-                        return 0.8
-
-
-                        
+                      
 
 nova_posicao = posicaoRandomica()
 sprites = pygame.sprite.Group()
 Game = Game()
 Game.mostrar_tela_start()
 sprites.add(Game)
-Game.mostrar_tela_nivel()
 nivel = Game.mostrar_tela_nivel()
 # Plano de fundo da tela e seu tamanho
 background_image = pygame.image.load("background.webp").convert()
