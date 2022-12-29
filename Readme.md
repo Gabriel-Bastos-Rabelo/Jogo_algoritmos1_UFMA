@@ -1,1 +1,1 @@
-Jogo sendo desenvolvido para a disciplina de algoritmos 1
+Jogo desenvolvido em python com a biblioteca pygame para a disciplina de algoritmos 1
